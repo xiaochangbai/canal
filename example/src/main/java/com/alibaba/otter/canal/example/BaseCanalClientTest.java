@@ -156,15 +156,37 @@ public class BaseCanalClientTest {
                 printXAInfo(rowChange.getPropsList());
                 for (RowData rowData : rowChange.getRowDatasList()) {
                     if (eventType == EventType.DELETE) {
-                        printColumn(rowData.getBeforeColumnsList());
+                        printColumn1("delete",rowData.getBeforeColumnsList());
                     } else if (eventType == EventType.INSERT) {
-                        printColumn(rowData.getAfterColumnsList());
+                        printColumn1("insert",rowData.getAfterColumnsList());
                     } else {
-                        printColumn(rowData.getAfterColumnsList());
+                        printColumn1("update",rowData.getAfterColumnsList());
                     }
                 }
             }
         }
+    }
+
+    protected void printColumn1(String type,List<Column> columns) {
+        StringBuilder builder = new StringBuilder(type);
+        builder.append("结果：");
+        for (Column column : columns) {
+            try {
+                if (StringUtils.containsIgnoreCase(column.getMysqlType(), "BLOB")
+                        || StringUtils.containsIgnoreCase(column.getMysqlType(), "BINARY")) {
+                    // get value bytes
+                    builder.append(" | ").append(new String(column.getValue().getBytes("ISO-8859-1"), "UTF-8"));
+                } else {
+                    builder.append(" | ").append(column.getValue());
+                }
+            } catch (UnsupportedEncodingException e) {
+            }
+            if (column.getUpdated()) {
+                builder.append("：" + column.getUpdated());
+            }
+        }
+        builder.append(SEP);
+        logger.info(builder.toString());
     }
 
     protected void printColumn(List<Column> columns) {
